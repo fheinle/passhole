@@ -231,6 +231,15 @@ def type_entries(args):
         log.warning("Selected entry does not have a password")
 
 
+def output(args):
+    """just output it to stdout so it can be used in scripts"""
+    kp = open_database(args)
+    entry = kp.find_entries_by_path(args.entry_path, first=True)
+    if entry:
+        print(entry.password.encode('utf-8' or ''))
+    else:
+        log.error(red("No such entry ") + bold(args.entry_path.encode('utf-8')))
+
 # print out the contents of an entry
 def show(args):
     kp = open_database(args)
@@ -364,6 +373,11 @@ def main():
     show_parser = subparsers.add_parser('show', help="show the contents of an entry")
     show_parser.add_argument('entry_path', metavar='PATH', type=str, help="Path to KeePass entry")
     show_parser.set_defaults(func=show)
+
+    # process args for `output` command
+    output_parser = subparsers.add_parser('output', help='Output just the password to stdout')
+    output_parser.add_argument('entry_path', metavar='PATH', type=str, help="Path to KeePass entry")
+    output_parser.set_defaults(func=output)
 
     # process args for `type` command
     type_parser = subparsers.add_parser('type', help="select entries using dmenu (or similar) and send to keyboard")
