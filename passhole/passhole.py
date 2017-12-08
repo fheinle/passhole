@@ -65,7 +65,7 @@ def init_database(args):
             log.error(red("Passwords do not match"))
             sys.exit()
 
-        log.info("Creating database at {}".format(bold(args.database)))
+        log.info("Creating database at {}".format(bold(args.database.encode('utf-8'))))
         shutil.copy(template_database_file, args.database)
 
         use_keyfile = input("Would you like to generate a keyfile? (Y/n): ")
@@ -76,9 +76,9 @@ def init_database(args):
         else:
             keyfile = keyfile_path if not args.keyfile else args.keyfile
 
-            log.debug("Looking for keyfile at {}".format(keyfile))
+            log.debug("Looking for keyfile at {}".format(keyfile.encode('utf-8')))
             if os.path.exists(keyfile):
-                log.info("Found existing keyfile at {}  Exiting".format(bold(keyfile)))
+                log.info("Found existing keyfile at {}  Exiting".format(bold(keyfile.encode('utf-8'))))
                 sys.exit()
 
             with open(keyfile, 'w') as f:
@@ -89,7 +89,7 @@ def init_database(args):
                     <Key><Data>{}</Data></Key>
                 </KeyFile>
                 '''
-                log.debug("keyfile contents {}".format(contents))
+                log.debug("keyfile contents {}".format(contents.encode('utf-8')))
                 f.write(contents.format(b64encode(os.urandom(32)).decode()))
 
         # create database
@@ -113,7 +113,7 @@ def create_password_cache(cache, password, fingerprint):
     if keys:
         # get the gpg key specified
         if fingerprint:
-            log.debug("Selected fingerprint: {}".format(fingerprint))
+            log.debug("Selected fingerprint: {}".format(fingerprint.encode('utf-8')))
             try:
                 selected_key = gpg.getkey(fingerprint.replace(' ', ''))
             except gpgme.GpgmeError:
@@ -156,7 +156,7 @@ def open_database(args):
 
     # retrieve password from cache
     if os.path.exists(os.path.expanduser(args.cache)) and not args.nocache:
-        log.debug("Retrieving password from {}".format(args.cache))
+        log.debug("Retrieving password from {}".format(args.cache.encode('utf-8')))
         outfile = BytesIO()
         with open(args.cache, 'rb') as infile:
             try:
@@ -215,7 +215,7 @@ def type_entries(args):
 
     selected_entry = kp.find_entries_by_path(selection_path, first=True)
 
-    log.debug("selected_entry:{}".format(selected_entry))
+    log.debug("selected_entry:{}".format(selected_entry.encode('utf-8')))
 
     # type out password
     k = PyKeyboard()
@@ -237,13 +237,13 @@ def show(args):
 
     entry = kp.find_entries_by_path(args.entry_path, first=True)
     if entry:
-        log.info(green("Title: ") + (entry.title or ''))
-        log.info(green("Username: ") + (entry.username or ''))
+        log.info(green("Title: ") + (entry.title.encode('utf-8') or ''))
+        log.info(green("Username: ") + (entry.username.encode('utf-8') or ''))
         log.info(green("Password: ") +
-                 Fore.RED + Back.RED + (entry.password or '') + Fore.RESET + Back.RESET)
+                 Fore.RED + Back.RED + (entry.password.encode('utf-8') or '') + Fore.RESET + Back.RESET)
         log.info(green("URL: ") + (entry.url or ''))
     else:
-        log.error(red("No such entry ") + bold(args.entry_path))
+        log.error(red("No such entry ") + bold(args.entry_path.encode('utf-8')))
 
 
 # list entries as a tree
@@ -251,12 +251,12 @@ def list_entries(args):
     kp = open_database(args)
 
     def list_items(group, depth):
-        log.info(bold(blue(' ' * depth + '[{}]'.format(group.name))))
+        log.info(bold(blue(' ' * depth + '[{}]'.format(group.name.encode('utf-8')))))
         for entry in sorted(group.entries, key=lambda x: x.__str__()):
             if entry == group.entries[-1]:
-                log.info(' ' * depth + "└── {0}".format(entry.title))
+                log.info(' ' * depth + "└── {0}".format(entry.title.encode('utf-8')))
             else:
-                log.info(' ' * depth + "├── {0}".format(entry.title))
+                log.info(' ' * depth + "├── {0}".format(entry.title.encode('utf-8')))
         for group in sorted(group.subgroups, key=lambda x: x.__str__()):
             list_items(group, depth+4)
 
@@ -279,8 +279,8 @@ def add(args):
         if not title:
             log.error(red("No group name given"))
 
-    log.debug("args.path:{}".format(args.path))
-    log.debug("group_path:{} , title:{}".format(group_path, title))
+    log.debug("args.path:{}".format(args.path.encode('utf-8')))
+    log.debug("group_path:{} , title:{}".format(group_path.encode('utf-8'), title.encode('utf-8')))
 
     parent_group = kp.find_groups_by_path(group_path, first=True)
 
